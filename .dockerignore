@@ -1,0 +1,10 @@
+node_modules
+.next
+.git
+.github
+docs
+out
+.vercel
+.DS_Store
+*.md
+!README.md

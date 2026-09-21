@@ -1,0 +1,838 @@
+@import "tailwindcss";
+
+/* ===========================================================================
+   Tokens
+
+   One palette, defined once, redefined for dark. Nothing in a component ever
+   names a colour directly: a raw hex in a component is a colour that will be
+   wrong in one of the two themes and nobody will notice until a screenshot.
+
+   Dark values are picked against #0c0c0e. Body text clears 4.5:1 in both
+   themes and secondary text clears 3:1.
+   ======================================================================== */
+:root {
+  --bg: #ffffff;
+  --surface: #f6f6f8;
+  --surface-2: #ececf0;
+  --ink: #1d1d1f;
+  --secondary: #55555a;
+  --label: #6e6e73;
+  --line: rgba(0, 0, 0, 0.08);
+  --line-strong: rgba(0, 0, 0, 0.18);
+  --invert-bg: #1d1d1f;
+  --invert-ink: #ffffff;
+  --glass: rgba(255, 255, 255, 0.72);
+  --accent: #34713f;
+  --accent-bg: #e8f2ea;
+  --warn: #a8482a;
+  --warn-bg: #fbefeb;
+  --cool: #2f5d9e;
+  --cool-bg: #eaf0fa;
+
+  /* Motion. One rhythm for the whole app: if two things move at two speeds
+     for no reason, the interface reads as two interfaces. */
+  --fast: 140ms;
+  --base: 220ms;
+  --slow: 320ms;
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-in: cubic-bezier(0.55, 0, 1, 0.45);
+
+  color-scheme: light;
+}
+
+[data-theme="dark"] {
+  --bg: #0c0c0e;
+  --surface: #161619;
+  --surface-2: #202024;
+  --ink: #f2f2f4;
+  --secondary: #a8a8b0;
+  --label: #8f8f98;
+  --line: rgba(255, 255, 255, 0.1);
+  --line-strong: rgba(255, 255, 255, 0.24);
+  --invert-bg: #f2f2f4;
+  --invert-ink: #0c0c0e;
+  --glass: rgba(14, 14, 17, 0.72);
+  --accent: #6fbf7f;
+  --accent-bg: #15211a;
+  --warn: #e79170;
+  --warn-bg: #241713;
+  --cool: #8ab0e6;
+  --cool-bg: #151a24;
+
+  color-scheme: dark;
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-ink: var(--ink);
+  --color-secondary: var(--secondary);
+  --color-label: var(--label);
+  --color-line: var(--line);
+  --font-sans: var(--font-geist-sans);
+  --font-display: var(--font-display);
+  --font-mono: var(--font-geist-mono);
+}
+
+* {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+html,
+body {
+  background: var(--bg);
+  color: var(--ink);
+}
+
+body {
+  font-family: var(--font-geist-sans), system-ui, sans-serif;
+  /* Tabular figures wherever a number sits in a column, so counts and dates
+     never shuffle their own width as they change. */
+  font-variant-numeric: proportional-nums;
+}
+
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+::selection {
+  background: var(--accent);
+  color: var(--bg);
+}
+
+:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
+  border-radius: 8px;
+}
+
+/* Quadrant tone. One declaration on the section and the dot, the count, the
+   chips and the drop ring all read from it. */
+[data-tone="warn"] { --tone: var(--warn); --tone-bg: var(--warn-bg); }
+[data-tone="accent"] { --tone: var(--accent); --tone-bg: var(--accent-bg); }
+[data-tone="cool"] { --tone: var(--cool); --tone-bg: var(--cool-bg); }
+[data-tone="label"] { --tone: var(--label); --tone-bg: var(--surface-2); }
+
+/* ===========================================================================
+   Shell and chrome
+   ======================================================================== */
+.shell {
+  min-height: 100dvh;
+}
+
+/* The bar is a translucent layer the board scrolls under, not an opaque strip
+   that eats a band of the page. At the very top there is nothing beneath it
+   to separate, so it wears no material at all until the first scroll. */
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  border-bottom: 1px solid transparent;
+  background-color: transparent;
+  /* The blur is always on and only the tint fades in.
+
+     Two other shapes of this were tried and both failed for reasons worth
+     recording. Declaring the filter only in the scrolled state does nothing,
+     because a backdrop-filter cannot be transitioned from `none`. Declaring
+     it as blur(0px) saturate(100%) so it has somewhere to animate from gets
+     minified to `blur()saturate()`, which is invalid, so the whole
+     declaration is dropped and the bar ends up as flat translucent paint with
+     the board legible straight through it.
+
+     Leaving it on costs nothing at the top of the page, where the only thing
+     behind the bar is the flat page background and a blur of it is a blur of
+     nothing.
+
+     The prefixed property is deliberately not written by hand: the build adds
+     it, and declaring both makes the minifier collapse the pair down to the
+     prefixed one alone, which Chrome then ignores. */
+  backdrop-filter: blur(24px) saturate(180%);
+  transition:
+    background-color var(--slow) ease,
+    border-color var(--slow) ease;
+}
+
+.topbar.is-scrolled {
+  background-color: var(--glass);
+  border-bottom-color: var(--line);
+  backdrop-filter: blur(24px) saturate(180%);
+}
+
+.topbar-inner {
+  margin: 0 auto;
+  display: flex;
+  max-width: 1180px;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+  padding: 14px 16px;
+}
+
+.board {
+  margin: 0 auto;
+  max-width: 1180px;
+  padding: 8px 16px 120px;
+}
+
+@media (min-width: 768px) {
+  .topbar-inner,
+  .board {
+    padding-left: 32px;
+    padding-right: 32px;
+  }
+}
+
+/* Tracking is size specific: large type reads too loose at default spacing,
+   small type reads too tight. One value for everything is wrong somewhere. */
+.wordmark {
+  font-family: var(--font-display), system-ui, sans-serif;
+  font-size: 25px;
+  font-weight: 500;
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+}
+
+.axis {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  color: var(--label);
+}
+
+.axis-v {
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+}
+
+.kbd {
+  font-family: var(--font-geist-mono), ui-monospace, monospace;
+  font-size: 10.5px;
+  padding: 2px 5px;
+  border-radius: 5px;
+  border: 1px solid var(--line);
+  background: var(--surface-2);
+  color: var(--secondary);
+}
+
+/* ===========================================================================
+   Press feedback
+
+   Every tappable thing answers on pointer down, not on release. The moment
+   feedback waits for the click, directness falls off a cliff.
+   ======================================================================== */
+.tap {
+  transition: transform var(--fast) var(--ease-out), background-color var(--fast) ease,
+    color var(--fast) ease, border-color var(--fast) ease, opacity var(--fast) ease;
+  touch-action: manipulation;
+}
+
+.tap:active {
+  transform: scale(0.96);
+}
+
+.segment {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 3px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+}
+
+.segment-item {
+  min-height: 34px;
+  padding: 0 14px;
+  border-radius: 999px;
+  font-size: 13px;
+  color: var(--secondary);
+}
+
+.segment-item:hover {
+  color: var(--ink);
+}
+
+.segment-item.is-on {
+  background: var(--invert-bg);
+  color: var(--invert-ink);
+}
+
+.pill,
+.pill-icon {
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  color: var(--secondary);
+}
+
+.pill {
+  min-height: 36px;
+  padding: 0 14px;
+  font-size: 12px;
+}
+
+.pill-icon {
+  height: 36px;
+  width: 36px;
+}
+
+.pill:hover,
+.pill-icon:hover {
+  border-color: var(--line-strong);
+  color: var(--ink);
+}
+
+.quiet-button {
+  border-radius: 8px;
+  padding: 6px 8px;
+  font-size: 11px;
+  color: var(--secondary);
+}
+
+.quiet-button:hover {
+  background: var(--surface-2);
+  color: var(--ink);
+}
+
+.chevron {
+  transition: transform var(--base) var(--ease-out);
+}
+
+.chevron.is-open {
+  transform: rotate(180deg);
+}
+
+.chevron.is-open-right {
+  transform: rotate(90deg);
+}
+
+/* ===========================================================================
+   Surfaces
+
+   Elevation is a scale, not a value per component: flat panels sit on the
+   page, the capture field and menus float above it, the dragged card floats
+   above everything. Bigger surfaces read as thicker.
+   ======================================================================== */
+.notice,
+.capture,
+.panel,
+.quadrant,
+.archive {
+  border-radius: 16px;
+  border: 1px solid var(--line);
+  background: var(--surface);
+}
+
+.notice {
+  overflow: hidden;
+}
+
+.capture {
+  background: var(--bg);
+  padding: 7px;
+  box-shadow: 0 1px 1px rgb(0 0 0 / 0.04), 0 18px 40px -28px rgb(0 0 0 / 0.42);
+  transition: border-color var(--base) ease, box-shadow var(--base) ease;
+}
+
+.capture:focus-within {
+  border-color: var(--line-strong);
+  box-shadow: 0 1px 1px rgb(0 0 0 / 0.04), 0 22px 50px -28px rgb(0 0 0 / 0.5);
+}
+
+[data-theme="dark"] .capture {
+  box-shadow: 0 1px 0 rgb(255 255 255 / 0.04), 0 18px 40px -28px rgb(0 0 0 / 0.7);
+}
+
+.panel,
+.quadrant {
+  padding: 12px;
+}
+
+.quadrant {
+  position: relative;
+  display: flex;
+  min-height: 224px;
+  flex-direction: column;
+  transition: border-color var(--base) ease, background-color var(--base) ease;
+}
+
+.quadrant-title {
+  font-family: var(--font-display), system-ui, sans-serif;
+  font-size: 17px;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+}
+
+.panel-title {
+  margin-bottom: 8px;
+  padding-inline: 4px;
+  font-family: var(--font-display), system-ui, sans-serif;
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--ink);
+}
+
+.month-title {
+  font-family: var(--font-display), system-ui, sans-serif;
+  font-size: 19px;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+}
+
+/* While something is in the air, every quadrant that is not the one it came
+   from says so quietly, and the one under the pointer says so loudly. Telling
+   the user where a thing can land beats making them find out. */
+.quadrant.is-candidate {
+  border-color: var(--line-strong);
+}
+
+.quadrant.is-over {
+  border-color: var(--tone);
+  background: var(--tone-bg);
+}
+
+/* Static film grain: one inlined turbulence tile painted as a background
+   image, so it never moves and costs nothing per frame. */
+.grain::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border-radius: inherit;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220' viewBox='0 0 220 220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='220' height='220' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: 220px 220px;
+  mix-blend-mode: multiply;
+  opacity: 0.18;
+}
+
+[data-theme="dark"] .grain::after {
+  mix-blend-mode: overlay;
+  opacity: 0.24;
+}
+
+/* ===========================================================================
+   Capture
+   ======================================================================== */
+.due-chip {
+  flex: none;
+  border-radius: 999px;
+  background: var(--accent-bg);
+  padding: 5px 10px;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--accent);
+}
+
+.add-button {
+  flex: none;
+  min-height: 36px;
+  border-radius: 999px;
+  background: var(--invert-bg);
+  padding: 0 16px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--invert-ink);
+}
+
+.add-button:disabled {
+  opacity: 0.38;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.quadrant-chip {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 30px;
+  border-radius: 999px;
+  padding: 0 10px;
+  font-size: 12px;
+  color: var(--label);
+}
+
+.quadrant-chip:hover {
+  color: var(--ink);
+}
+
+.quadrant-chip.is-on {
+  background: var(--tone-bg);
+  color: var(--tone);
+}
+
+/* ===========================================================================
+   Notifications
+   ======================================================================== */
+.band-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  border-radius: 999px;
+  background: var(--tone-bg);
+  padding: 2px 8px;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--tone);
+}
+
+.notice-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border-radius: 10px;
+  padding: 6px 8px;
+  transition: background-color var(--fast) ease;
+}
+
+.notice-row:hover {
+  background: var(--bg);
+}
+
+/* ===========================================================================
+   Task rows and the card in flight
+   ======================================================================== */
+.task-row {
+  transition: border-color var(--base) ease, background-color var(--base) ease,
+    transform var(--base) var(--ease-out), opacity var(--base) ease;
+  cursor: grab;
+}
+
+.task-row:hover {
+  border-color: var(--line-strong);
+}
+
+.task-row:active {
+  cursor: grabbing;
+}
+
+/* The row the dragged card came from stays in place and dims. Removing it
+   would reflow the column under the pointer, which is the one thing a drag
+   must never do. */
+.task-row.is-lifted {
+  opacity: 0.32;
+  border-style: dashed;
+}
+
+/* The card under the pointer is the heaviest surface on screen, because it is
+   the one that is actually off the page. */
+.drag-ghost {
+  border-radius: 12px;
+  box-shadow: 0 18px 40px -12px rgb(0 0 0 / 0.38), 0 2px 8px rgb(0 0 0 / 0.14);
+  cursor: grabbing;
+}
+
+[data-theme="dark"] .drag-ghost {
+  box-shadow: 0 18px 40px -12px rgb(0 0 0 / 0.7), 0 2px 8px rgb(0 0 0 / 0.5);
+}
+
+/* ===========================================================================
+   Menus
+
+   Anchored to the control that opened them and scaled from that corner, so
+   the relationship between the button and the panel is never in doubt.
+   ======================================================================== */
+.menu-surface {
+  border: 1px solid var(--line);
+  background: var(--glass);
+  backdrop-filter: blur(22px) saturate(180%);
+  box-shadow: 0 16px 40px -16px rgb(0 0 0 / 0.36), 0 2px 6px rgb(0 0 0 / 0.1);
+  animation: menu-in 200ms var(--ease-out) both;
+}
+
+[data-theme="dark"] .menu-surface {
+  box-shadow: 0 16px 40px -16px rgb(0 0 0 / 0.72), 0 2px 6px rgb(0 0 0 / 0.5);
+}
+
+.menu-item {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  gap: 8px;
+  border-radius: 10px;
+  padding: 8px 10px;
+  text-align: left;
+  font-size: 13px;
+  color: var(--secondary);
+  transition: background-color var(--fast) ease, color var(--fast) ease;
+}
+
+.menu-item:hover,
+.menu-item:focus-visible {
+  background: var(--surface-2);
+  color: var(--ink);
+}
+
+@keyframes menu-in {
+  from {
+    opacity: 0;
+    transform: scale(0.94) translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* ===========================================================================
+   Calendar
+
+   Six fixed weeks, so paging through months never changes the page height and
+   the panel beside it never jumps.
+   ======================================================================== */
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 1px;
+  background: var(--line);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  overflow: hidden;
+  transition: border-color var(--base) ease;
+}
+
+.calendar-grid.is-receiving {
+  border-color: var(--line-strong);
+}
+
+.calendar-cell {
+  display: block;
+  width: 100%;
+  min-height: 104px;
+  padding: 7px;
+  text-align: left;
+  background: var(--bg);
+  transition: background-color var(--fast) ease, box-shadow var(--fast) ease;
+}
+
+.calendar-cell[data-weekend="true"] {
+  background: color-mix(in srgb, var(--surface) 45%, var(--bg));
+}
+
+.calendar-cell[data-outside="true"] {
+  background: var(--surface);
+}
+
+.calendar-cell[data-today="true"] {
+  background: var(--accent-bg);
+}
+
+.calendar-cell.is-selected {
+  box-shadow: inset 0 0 0 1.5px var(--line-strong);
+}
+
+.calendar-cell.is-over {
+  background: var(--surface-2);
+  box-shadow: inset 0 0 0 2px var(--ink);
+}
+
+.calendar-date {
+  font-family: var(--font-geist-mono), ui-monospace, monospace;
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  color: var(--label);
+}
+
+.calendar-cell[data-today="true"] .calendar-date {
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.day-chip,
+.rail-chip {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  border-radius: 7px;
+  font-size: 11px;
+  line-height: 1.25;
+  cursor: grab;
+  background: var(--tone-bg);
+  color: var(--tone);
+  transition: transform var(--fast) var(--ease-out);
+}
+
+.day-chip {
+  padding: 3px 6px;
+  overflow: hidden;
+}
+
+.day-chip:active,
+.rail-chip:active {
+  cursor: grabbing;
+  transform: scale(0.97);
+}
+
+.rail-chip {
+  max-width: 100%;
+  border: 1px solid var(--line);
+  background: var(--bg);
+  padding: 7px 9px;
+  font-size: 12px;
+  color: var(--secondary);
+}
+
+@media (max-width: 767px) {
+  .calendar-cell {
+    min-height: 68px;
+    padding: 4px;
+  }
+}
+
+/* ===========================================================================
+   Footer, toast
+   ======================================================================== */
+.foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 12px;
+  padding: 18px 4px 0;
+  font-size: 12px;
+  color: var(--label);
+}
+
+.foot-link {
+  color: inherit;
+  transition: color var(--fast) ease;
+}
+
+.foot-link:hover {
+  color: var(--ink);
+}
+
+.toast {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  z-index: 40;
+  display: flex;
+  translate: -50% 0;
+  align-items: center;
+  gap: 12px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: var(--glass);
+  backdrop-filter: blur(22px) saturate(180%);
+  padding: 7px 7px 7px 16px;
+  box-shadow: 0 18px 40px -18px rgb(0 0 0 / 0.45);
+}
+
+.toast-action {
+  border-radius: 999px;
+  background: var(--invert-bg);
+  padding: 6px 13px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--invert-ink);
+}
+
+/* ===========================================================================
+   Entrances
+
+   The board is the largest thing on the page and it paints on first render,
+   so its entrance is a keyframe rather than a JS animation: gating it behind
+   hydration would add the whole bundle cost to the reported load time. The
+   stagger is a per element delay, which keeps all of it on the compositor.
+   ======================================================================== */
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.rise {
+  animation: rise 520ms var(--ease-out) both;
+}
+
+.rise-1 { animation-delay: 50ms; }
+.rise-2 { animation-delay: 100ms; }
+.rise-3 { animation-delay: 150ms; }
+.rise-4 { animation-delay: 200ms; }
+
+/* A missed deadline keeps saying so, slowly enough not to pull the eye off
+   the text it belongs to. Opacity only: no filter, no layout. */
+@keyframes breathe {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.35; }
+}
+
+.breathe {
+  animation: breathe 2.6s ease-in-out infinite;
+}
+
+/* ===========================================================================
+   Accessibility preferences
+
+   Three independent signals, each handled on its own terms. Reduced motion
+   does not mean no feedback, it means feedback that does not move.
+   ======================================================================== */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  .rise,
+  .breathe,
+  .menu-surface {
+    animation: none;
+  }
+
+  .tap,
+  .task-row,
+  .chevron,
+  .day-chip,
+  .rail-chip,
+  .calendar-cell,
+  .quadrant,
+  .capture,
+  .topbar {
+    transition-duration: 1ms;
+  }
+
+  .tap:active,
+  .day-chip:active,
+  .rail-chip:active {
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .topbar.is-scrolled,
+  .menu-surface,
+  .toast {
+    background: var(--bg);
+    backdrop-filter: none;
+  }
+}
+
+@media (prefers-contrast: more) {
+  :root {
+    --line: rgba(0, 0, 0, 0.3);
+    --line-strong: rgba(0, 0, 0, 0.6);
+    --label: #4a4a4f;
+  }
+
+  [data-theme="dark"] {
+    --line: rgba(255, 255, 255, 0.34);
+    --line-strong: rgba(255, 255, 255, 0.66);
+    --label: #c2c2c9;
+  }
+
+  .topbar.is-scrolled,
+  .menu-surface,
+  .toast {
+    background: var(--bg);
+    backdrop-filter: none;
+  }
+}
