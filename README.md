@@ -1,4 +1,4 @@
-<h1 align="center">Decisive</h1>
+<h1 align="center">ToDone</h1>
 
 <p align="center">
   <strong>A local first decision matrix, with the deadlines the matrix cannot hold.</strong>
@@ -160,8 +160,8 @@ comes back is the whole previous board rather than just the row.
 ## Run it
 
 ```bash
-git clone https://github.com/JulianGiraldo96/decisive.git
-cd decisive
+git clone https://github.com/JulianGiraldo96/todone.git
+cd todone
 npm install
 npm run dev
 ```
@@ -186,8 +186,8 @@ docker compose up -d
 Or without compose:
 
 ```bash
-docker build -t decisive .
-docker run -d --name decisive -p 3000:3000 --restart unless-stopped decisive
+docker build -t todone .
+docker run -d --name todone -p 3000:3000 --restart unless-stopped todone
 ```
 
 The image is multi stage and runs as a non root user. Nothing in it is
@@ -199,7 +199,7 @@ It is a plain HTTP server on port 3000 with no websockets and no long lived
 connections, so any proxy will do. Caddy, for example:
 
 ```
-decisive.example.com {
+todone.example.com {
   reverse_proxy localhost:3000
 }
 ```
@@ -227,13 +227,13 @@ node .next/standalone/server.js
 
 ### One click
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/JulianGiraldo96/decisive)
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/JulianGiraldo96/todone)
 
 <br>
 
 ## Your data
 
-Tasks are written to your browser's `localStorage` under `decisive.tasks.v1`.
+Tasks are written to your browser's `localStorage` under `todone.tasks.v1`.
 
 - No account, no server, no sync, no analytics, no telemetry, no network call
   on any path that matters.

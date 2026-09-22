@@ -4,7 +4,14 @@ import { useCallback, useEffect, useState, useSyncExternalStore } from "react";
 import type { QuadrantId, Task } from "./types";
 import { addDays, todayISO } from "./dates";
 
-const KEY = "decisive.tasks.v1";
+const KEY = "todone.tasks.v1";
+
+/* The app was called Decisive before it was called ToDone. Anyone who used it
+   under the old name still has their board sitting under the old key, and a
+   rename is no reason to lose it: the first read falls back to it, the first
+   write lands on the new key, and the old one is cleared once its contents are
+   safely moved. */
+const LEGACY_KEY = "decisive.tasks.v1";
 
 /* Local first, and that is the whole backend.
 
@@ -29,7 +36,7 @@ function isTask(value: unknown): value is Task {
 
 function read(): Task[] | null {
   try {
-    const raw = window.localStorage.getItem(KEY);
+    const raw = window.localStorage.getItem(KEY) ?? window.localStorage.getItem(LEGACY_KEY);
     if (!raw) return null;
     const parsed: unknown = JSON.parse(raw);
     if (!Array.isArray(parsed)) return null;
@@ -42,6 +49,7 @@ function read(): Task[] | null {
 function write(tasks: Task[]) {
   try {
     window.localStorage.setItem(KEY, JSON.stringify(tasks));
+    window.localStorage.removeItem(LEGACY_KEY);
   } catch {
     /* a full or blocked store is not a reason to lose the session: the board
        keeps working in memory until the tab closes */

@@ -1,8 +1,8 @@
 services:
-  decisive:
+  todone:
     build: .
-    image: decisive
-    container_name: decisive
+    image: todone
+    container_name: todone
     ports:
       - "3000:3000"
     restart: unless-stopped

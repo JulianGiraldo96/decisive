@@ -12,11 +12,11 @@ const display = Outfit({
 });
 
 export const metadata: Metadata = {
-  title: "Decisive | A local first decision matrix",
+  title: "ToDone | A local first decision matrix",
   description:
     "One capture field, four consequence quadrants, a calendar of deadlines. Your tasks stay in your browser.",
   openGraph: {
-    title: "Decisive",
+    title: "ToDone",
     description: "A local first decision matrix with a deadline calendar.",
     type: "website",
   },

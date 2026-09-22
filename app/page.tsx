@@ -91,7 +91,7 @@ export default function Page() {
         <header className={clsx("topbar", scrolled && "is-scrolled")}>
           <div className="topbar-inner">
             <div className="mr-auto min-w-0">
-              <h1 className="wordmark">Decisive</h1>
+              <h1 className="wordmark">ToDone</h1>
               <p className="hidden text-[13px] text-[var(--label)] sm:block">
                 One capture field, four consequence quadrants, a calendar of deadlines.
               </p>
@@ -114,7 +114,7 @@ export default function Page() {
             <ThemeToggle />
 
             <a
-              href="https://github.com/JulianGiraldo96/decisive"
+              href="https://github.com/JulianGiraldo96/todone"
               target="_blank"
               rel="noreferrer"
               aria-label="Source on GitHub"
